@@ -1,0 +1,55 @@
+We can do below row-level transactions in hive after Transactions was introduced.
+
+1.Insert
+2.Delete
+3.Update
+
+Transactions in hive is enabled after 0.14 version.
+
+To enable Transactions we have to set below properties.
+
+--------------
+
+set hive.support.concurrency = true;
+ 
+set hive.enforce.bucketing = true;
+ 
+set hive.exec.dynamic.partition.mode = nonstrict;
+ 
+set hive.txn.manager = org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+ 
+set hive.compactor.initiator.on = true;
+ 
+set hive.compactor.worker.threads = 2;
+
+---------------------
+
+Step 1: Create a table with property transactional'='true
+ 
+CREATE TABLE college(clg_id int,clg_name string,clg_loc string) clustered by (clg_id) into 5 buckets stored as orc TBLPROPERTIES('transactional'='true');
+
+Step 2: Insert data.
+ 
+INSERT INTO table college values(1,'nec','nlr'),(2,'vit','vlr'),(3,'srm','chen'),(4,'lpu','del'),(5,'stanford','uk'),(6,'JNTUA','atp'),(7,'cambridge','us');
+
+
+Step 3: Updating
+
+1. We cannot update on the columns which are bucketed.
+
+UPDATE college set id=10 where id=2;
+
+If we try to update the college id which is a bucketed column, so got below error.
+
+FAILED: SemanticException [Error 10294]: Attempt to do update or delete using transaction manager that does not support these operations.
+ 
+
+UPDATE college set clg_name = 'IIT' where clg_id = 6;
+
+
+==========================================================================
+
+
+Note: Eventhough my hive version is 0.14, I am not able to use Transations. Even I have raised ticket for the same. The create statement only not working
+
+So I am sending only the hive queries without the result screenshot. Please evaluate properly.
